@@ -1,5 +1,6 @@
 package br.com.jcardoso.libraryapi.api.resoucer;
 
+import br.com.jcardoso.libraryapi.dto.BookDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ public class BookControllerTest {
     @DisplayName("Deve criar um livro com sucesso")
     public void createBookTest() throws Exception {
 
+        BookDTO dto = BookDTO.builder().author("Jaderson").title("As aventuras").isbn("001").build();
         String json = new ObjectMapper().writeValueAsString(null);
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
@@ -46,9 +48,9 @@ public class BookControllerTest {
                 .perform(request)
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("id").isNotEmpty())
-                .andExpect(jsonPath("title").value("Meu Livro"))
-                .andExpect(jsonPath("author").value("Autor"))
-                .andExpect(jsonPath("isbn").value("1213212"))
+                .andExpect(jsonPath("title").value(dto.getTitle()))
+                .andExpect(jsonPath("author").value(dto.getAuthor()))
+                .andExpect(jsonPath("isbn").value(dto.getIsbn()))
         ;
     }
 

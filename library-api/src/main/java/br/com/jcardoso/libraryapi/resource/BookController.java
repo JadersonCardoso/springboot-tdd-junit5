@@ -4,6 +4,7 @@ package br.com.jcardoso.libraryapi.resource;
 import br.com.jcardoso.libraryapi.dto.BookDTO;
 import br.com.jcardoso.libraryapi.entity.Book;
 import br.com.jcardoso.libraryapi.exception.ApiErrors;
+import br.com.jcardoso.libraryapi.exception.BusinessException;
 import br.com.jcardoso.libraryapi.service.BookService;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
@@ -43,6 +44,12 @@ public class BookController {
     public ApiErrors handleValidationException(MethodArgumentNotValidException ex) {
         BindingResult bindingResult =  ex.getBindingResult();
         return new ApiErrors(bindingResult);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrors handleBusinessException(BusinessException ex) {
+        return new ApiErrors(ex);
     }
 
 }

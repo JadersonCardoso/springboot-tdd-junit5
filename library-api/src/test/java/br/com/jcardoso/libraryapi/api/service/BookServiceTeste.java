@@ -1,9 +1,11 @@
 package br.com.jcardoso.libraryapi.api.service;
 
+import br.com.jcardoso.libraryapi.exception.BusinessException;
 import br.com.jcardoso.libraryapi.repository.BookRepository;
 import br.com.jcardoso.libraryapi.service.impl.BookServiceImpl;
 import br.com.jcardoso.libraryapi.entity.Book;
 import br.com.jcardoso.libraryapi.service.BookService;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,15 +34,15 @@ public class BookServiceTeste {
 
     @Test
     @DisplayName("Deve salvar um livro")
-    public void sabeBookTest(){
+    public void saveBookTest(){
         //cenario
-        Book book = Book.builder().isbn("123").author("Fulano").title("As aventuras").build();
+        Book book = createValideBook();
+        Mockito.when(repository.existsByIsbn(Mockito.anyString())).thenReturn(true);
+
         Mockito.when( repository.save(book)).thenReturn(
                 Book.builder().id(1L)
-                        .isbn("123")
-                        .author("Fulano")
-                        .title("As aventuras")
-                        .build());
+                        .isbn("123").author("Fulano").title("As aventuras").build()
+        );
 
         //execução
         Book savedBook =  service.save(book);
@@ -50,5 +52,31 @@ public class BookServiceTeste {
         assertThat(savedBook.getIsbn()).isEqualTo("123");
         assertThat(savedBook.getTitle()).isEqualTo("As aventuras");
         assertThat(savedBook.getAuthor()).isEqualTo("Fulano");
+    }
+
+    private Book createValideBook() {
+        return Book.builder().isbn("123").author("Fulano").title("As aventuras").build();
+    }
+
+    @Test
+    @DisplayName("Deve lançar erro de negócio ao tentar salvar um livro com isbn duplicado ")
+    public void shoulNotSaveBookIWthDuplicatedISBN() {
+        //cenario
+        Book book = createValideBook();
+        Mockito.when(repository.existsByIsbn(Mockito.anyString())).thenReturn(true);
+
+        //execucao
+        Throwable exception =  Assertions.catchThrowable(() ->  service.save(book));
+
+        //verificações
+        assertThat(exception)
+                .isInstanceOf(BusinessException.class)
+                .hasMessage("Isbn já cadastrado.");
+
+
+        Mockito.verify(repository, Mockito.never()).save(book);
+
+
+
     }
 }
